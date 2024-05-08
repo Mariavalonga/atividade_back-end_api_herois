@@ -101,20 +101,25 @@ app.delete('/herois/:id', async (req, res) => {
     }
 });
 
-app.get('/batalhas/nome/:nome', async (req, res) => {
+app.get('/herois/poder/:poder', async (req, res) => {
+    const { poder } = req.params;
     try {
-        const { nome } = req.params;
-        const resultado = await pool.query('SELECT * FROM herois WHERE nome = $1', [nome]);
-        res.json ({
-            total: resultado.rowCount,
-            herois: resultado.rows
-
-        })
+        const {rows} = await pool.query('SELECT * FROM herois WHERE poder = $1', [poder]);
+        res.json(rows);
     } catch (error) {
-        console.error('Erro ao buscar o heroi', error);
-        res.status(500).send('Erro ao buscar o heroi');
+        res.status(500).json({ message: error.message });
     }
-    });
+});
+
+app.get('/herois/nome/:nome', async (req, res) => {
+    const { nome } = req.params;
+    try {
+        const {rows} = await pool.query('SELECT * FROM herois WHERE nome = $1', [nome]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 app.get('/batalhas/:heroi1_id/:heroi2_id', async (req, res) => {
     const { heroi1_id, heroi2_id } = req.params;
 
