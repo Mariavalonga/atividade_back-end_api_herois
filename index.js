@@ -14,6 +14,7 @@ const pool = new Pool({
 
 app.use(express.json());
 
+// Rota para criar Herói
 app.post('/herois', async (req, res) => {
     const { nome, poder, nivel, hp } = req.body;
     const query = `INSERT INTO herois (nome, poder, nivel, hp) VALUES ($1, $2, $3, $4) RETURNING *`; 
@@ -27,11 +28,11 @@ app.post('/herois', async (req, res) => {
         res.status(500).json({ error: 'Erro ao inserir o heroi'});
     }
 });
-
+// Rota para verificar se está conectado
 app.get('/', (req, res) => {
     res.send('Bem-vindo à API de heróis!');
 });
-
+// Rota para buscar todos os herois
 app.get('/herois', async (req, res) => {
     const { nome } = req.query;
 
@@ -51,7 +52,7 @@ app.get('/herois', async (req, res) => {
         res.status(500).send('Erro ao buscar herois');
     }
 });
-
+// Rota para buscar os heróis por Id.
 app.get('/herois/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -66,7 +67,7 @@ app.get('/herois/:id', async (req, res) => {
         res.status(500).send('Erro ao buscar o heroi');
     }
 });
-
+// Rota para atualizar heróis
 app.put('/herois/:id', async (req, res) => {
     const { id } = req.params;
     const { nome, poder } = req.body;
@@ -84,7 +85,7 @@ app.put('/herois/:id', async (req, res) => {
         res.status(500).send('Erro ao atualizar o heroi');
     }
 });
-
+// Rota para deletar heróis
 app.delete('/herois/:id', async (req, res) => {
     const id = req.params.id;
     const query = 'DELETE FROM herois WHERE id = $1';
@@ -100,7 +101,7 @@ app.delete('/herois/:id', async (req, res) => {
         res.status(500).send('Erro ao excluir o heroi');
     }
 });
-
+// Rota para buscar o herói de acordo com o poder
 app.get('/herois/poder/:poder', async (req, res) => {
     const { poder } = req.params;
     try {
@@ -110,16 +111,17 @@ app.get('/herois/poder/:poder', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-
+// Rota para buscar o herói pelo nome
 app.get('/herois/nome/:nome', async (req, res) => {
-    const { nome } = req.params;
+    const { nome } = req.params; 
     try {
-        const {rows} = await pool.query('SELECT * FROM herois WHERE nome = $1', [nome]);
+        const { rows } = await pool.query('SELECT * FROM herois WHERE nome = $1', [nome]);
         res.json(rows);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
+// Rota para batalhar heróis
 app.get('/batalhas/:heroi1_id/:heroi2_id', async (req, res) => {
     const { heroi1_id, heroi2_id } = req.params;
 
@@ -134,6 +136,7 @@ app.get('/batalhas/:heroi1_id/:heroi2_id', async (req, res) => {
     }
 });
 
+// Função para calcular os vencedores
 async function calcularVencedor(heroi1_id, heroi2_id) {
     try {
         const heroi1 = await pool.query('SELECT * FROM herois WHERE id = $1', [heroi1_id]);
@@ -155,9 +158,7 @@ async function calcularVencedor(heroi1_id, heroi2_id) {
         throw error;
     }
 }
-
-
-
+// Rota para buscar as batalhas
 app.get('/batalhas', async (req, res) => {
     try {
         const { rows } = await pool.query('SELECT * FROM batalhas');
@@ -166,7 +167,7 @@ app.get('/batalhas', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-
+// Rota para buscar as batalhas pelos herois
 app.get('/batalhas/herois', async (req, res) => {
     try {
         const { rows } = await pool.query('SELECT batalhas.id, heroi1_id, heroi2_id, vencedor_id, herois.nome as vencedor_nome, herois.poder as vencedor_poder, herois.nivel as vencedor_nivel, herois.hp as vencedor_hp FROM batalhas INNER JOIN herois ON batalhas.vencedor_id = herois.id');
